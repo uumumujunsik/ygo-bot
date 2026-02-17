@@ -1,0 +1,5 @@
+name: Daily Meta Scraper
+on:
+  schedule:
+    - cron: '0 0 * * *'
+# ... (아래 내용 쭉 다 복사)
