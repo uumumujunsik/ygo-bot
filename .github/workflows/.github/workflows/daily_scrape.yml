@@ -1,0 +1,19 @@
+name: Daily Meta Scraper
+on:
+schedule:
+# Runs at 00:00 UTC (9 AM KST)
+- cron: '0 0 * * *'
+jobs:
+build:
+runs-on: ubuntu-latest
+permissions:
+contents: write # Crucial!
+steps:
+- uses: actions/checkout@v3
+- run: pip install -r requirements.txt
+- run: python scraper.py
+- run: |
+git config user.name 'bot'
+git add meta_data.json
+git commit -m "Update Meta"
+git push
