@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-import json
+import data.json
 import time
 
 def scrape_meta():
