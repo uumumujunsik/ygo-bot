@@ -4,6 +4,7 @@ import json
 import time
 
 def scrape_meta():
+    # URL 깔끔하게 수정
     url = "[https://ygoprodeck.com/tournaments/top-archetypes/](https://ygoprodeck.com/tournaments/top-archetypes/)"
     
     # 봇 아닌 척 위장하기 (헤더 설정)
@@ -12,53 +13,41 @@ def scrape_meta():
     }
 
     print("카드 줍는 중... (사이트 접속)")
-    response = requests.get(url, headers=headers)
-    
-    if response.status_code != 200:
-        print(f"야! 접속 안 된다! 상태코드: {response.status_code}")
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status() # 404나 500 에러 나면 바로 예외 발생
+    except Exception as e:
+        print(f"접속 실패: {e}")
         return
 
     soup = BeautifulSoup(response.text, 'html.parser')
     
     deck_list = []
     
-    # 사이트 HTML 구조 분석 (F12 눌러서 확인 필요)
-    # 2024년 기준, 보통 리스트는 특정 div나 table 안에 있음.
-    # 여기서는 예시로 구조를 잡음. 실제 태그랑 클래스는 바뀔 수 있으니 확인 필수!
+    # 아래 선택자(selector)는 사이트 구조에 따라 바뀔 수 있음
+    # F12 눌러서 실제 덱 이름이 있는 태그를 확인해야 함
+    # 일단 일반적인 구조로 가정하고 작성함
     
-    # 예시: 덱 이름이 들어있는 요소 찾기 (실제 사이트 구조에 맞춰 수정 필요할 수 있음)
-    # 아래 코드는 '이런 식으로 짠다'는 예시임
+    # 예: div 태그 중 class가 'archetype-name' 인 것 찾기 (예시임!)
+    # 실제로는 사이트 가서 F12로 찍어보고 class 이름 바꿔줘야 할 수도 있음
+    archetypes = soup.select('div.archetype-name') 
     
-    # Top Archetypes 페이지는 보통 테이블이나 그리드로 되어있음.
-    # container나 row를 찾아서 반복문 돌려야 함.
-    
-    # (가상 시나리오) h3 태그에 덱 이름이 있다고 가정
-    archetypes = soup.select('div.archetype-name') # <-- 이 부분은 실제 CSS Selector로 바꿔야 함
-    
-    # 만약 못 찾으면 텍스트라도 긁어오자 (비상용)
+    # 만약 못 찾으면 비상용 데이터라도 넣어서 파일이 생성되게 함 (에러 방지)
     if not archetypes:
-        print("CSS 선택자가 안 맞아서 텍스트 위주로 긁어봄")
-        # 예시 데이터 (실패 시 빈 파일 방지)
+        print("경고: CSS 선택자로 요소를 못 찾음. 비상용 데이터 저장.")
         deck_list = [
-            {"rank": 1, "name": "Tenpai Dragon", "tier": 1},
-            {"rank": 2, "name": "Snake-Eye", "tier": 1},
-            {"rank": 3, "name": "Yubel", "tier": 2}
+            {"rank": 1, "name": "Tenpai Dragon (Fallback)", "tier": 1},
+            {"rank": 2, "name": "Snake-Eye (Fallback)", "tier": 1},
+            {"rank": 3, "name": "Yubel (Fallback)", "tier": 2}
         ]
     else:
         for idx, item in enumerate(archetypes):
             name = item.text.strip()
+            # 링크 주소도 깔끔하게 처리
+            link_tag = item.find_parent('a')
+            link_url = ""
+            if link_tag and link_tag.has_attr('href'):
+                 link_url = "[https://ygoprodeck.com](https://ygoprodeck.com)" + link_tag['href']
+
             deck_list.append({
-                "rank": idx + 1,
-                "name": name,
-                "url": "[https://ygoprodeck.com](https://ygoprodeck.com)" + item.find_parent('a')['href'] if item.find_parent('a') else ""
-            })
-
-    # 결과를 JSON 파일로 저장
-    with open('data.json', 'w', encoding='utf-8') as f:
-        json.dump(deck_list, f, ensure_ascii=False, indent=2)
-    
-    print("✅ 크롤링 완료! data.json 저장됨.")
-
-if __name__ == "__main__":
-    scrape_meta()
-```
+                "rank": idx + 1
