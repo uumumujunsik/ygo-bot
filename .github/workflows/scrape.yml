@@ -28,7 +28,8 @@ jobs:
 
       - name: 크롤러 실행
         run: python scraper.py
-
+        - name: 파일 생성 확인 (디버깅용)
+         run: ls -R
       - name: 결과물 저장 (Git Push)
         run: |
           git config --global user.name "YGO-Bot"
