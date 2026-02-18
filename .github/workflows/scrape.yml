@@ -1,0 +1,38 @@
+name: YGO Meta Scraper
+
+on:
+  schedule:
+    # 매일 UTC 00:00 (한국 시간 오전 9시)에 실행
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 수동으로 버튼 눌러서 실행 가능하게 함
+
+permissions:
+  contents: write # 중요! 이 줄이 있어야 봇이 깃허브에 파일을 쓸(Push) 수 있음
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 코드 가져오기 (Checkout)
+        uses: actions/checkout@v3
+
+      - name: 파이썬 세팅
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: 라이브러리 설치
+        run: |
+          pip install -r requirements.txt
+
+      - name: 크롤러 실행
+        run: python scraper.py
+
+      - name: 결과물 저장 (Git Push)
+        run: |
+          git config --global user.name "YGO-Bot"
+          git config --global user.email "bot@noreply.github.com"
+          git add data.json
+          # 변경사항이 있을 때만 커밋
+          git commit -m "Update meta data: $(date)" || exit 0
+          git push
