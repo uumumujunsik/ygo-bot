@@ -1,10 +1,9 @@
 name: YGO Meta Scraper
-on:
+on:  
+workflow_dispatch: # 수동으로 버튼 눌러서 실행 가능하게 함
   schedule:
     # 매일 UTC 00:00 (한국 시간 오전 9시)에 실행
     - cron: '0 0 * * *'
-  workflow_dispatch: # 수동으로 버튼 눌러서 실행 가능하게 함
-
 # 여기가 제일 중요함! 봇한테 쓰기 권한 주기
 permissions:
   contents: write
@@ -27,8 +26,8 @@ jobs:
 
       - name: 크롤러 실행
         run: python scraper.py
-        - name: 파일 생성 확인 (디버깅용)
-         run: ls -R
+      - name: 파일 생성 확인 (디버깅용)
+        run: ls -R
       - name: 결과물 저장 (Git Push)
         run: |
           git config --global user.name "YGO-Bot"
