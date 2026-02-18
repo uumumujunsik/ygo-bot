@@ -50,4 +50,4 @@ def scrape_meta():
                  link_url = "[https://ygoprodeck.com](https://ygoprodeck.com)" + link_tag['href']
 
             deck_list.append({
-                "rank": idx + 1
+                "rank": idx + 1})
